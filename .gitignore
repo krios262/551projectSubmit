@@ -1,0 +1,9 @@
+*.txt
+*.bak
+work/
+TSMC_lib/
+*.svf
+*.log
+*.mti
+*.mpf
+*.wlf
