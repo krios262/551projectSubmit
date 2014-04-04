@@ -27,9 +27,9 @@ module t_CVP14();
 
   initial begin
     
-    $monitor("%t: State: %d, nextState: %d, Inst: %h, PC: %d, Addr: %h, WR: %b, RD: %b, DataOut: %h, vOutS: %h, vRD_s: %b, select: %d",
-            $time, UUT.state, UUT.nextState, UUT.instruction, UUT.PC, 
-            UUT.Addr, UUT.WR, UUT.RD, UUT.DataOut, UUT.vOutS, UUT.vRD_s, UUT.vector.select);
+    $monitor("%t: State: %d, nextState: %d, Inst: %h, PC: %d, Addr: %h, WR: %b, RD: %b, DataOut: %h, vOutS: %h, vRD_s: %b, select: %d, V: %b",
+            $time, UUT.state, UUT.nextState, UUT.instruction, UUT.PC,
+            UUT.Addr, UUT.WR, UUT.RD, UUT.DataOut, UUT.vOutS, UUT.vRD_s, UUT.vector.select, UUT.V);
     
     /*
     $monitor("%t: State %b, Inst: %h, sWR_l:, %b, Scalar 0: %h, sIn: %h, sAddr: %h", $time, UUT.state,

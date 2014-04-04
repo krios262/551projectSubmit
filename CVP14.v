@@ -21,6 +21,7 @@ module CVP14(output [15:0] Addr, output reg RD, output reg WR, output reg V,
   wire [15:0] PC; //program counter
   reg [15:0] instruction;
   wire [3:0] inc_offset;
+  reg V_flag;
 
   reg [2:0] state, nextState;
 
@@ -41,7 +42,7 @@ module CVP14(output [15:0] Addr, output reg RD, output reg WR, output reg V,
 
   //Addressing
   PCunit pcu(.PC(PC), .offset(instruction[11:0]), .Clk2(Clk2), .updatePC(updatePC),
-              .jump(jump), .reset(Reset), .overflow(V));
+              .jump(jump), .reset(Reset), .overflow(V_flag));
   addrUnit addru(.addr(Addr), .PC(PC), .Clk1(Clk1), .imm_offset(instruction[5:0]),
               .addrBase(sOut), .setPC(setPC), .updateAddr(updateAddr), .inc_offset(inc_offset));
   offsetu osu(.Reset(Reset), .Clk2(Clk2), .offsetInc(offsetInc), .offset(inc_offset));
@@ -57,7 +58,8 @@ module CVP14(output [15:0] Addr, output reg RD, output reg WR, output reg V,
       updatePC <= 1'b0;
       jump <= 1'b0;
       offsetInc <= 1'b0;
-    end else
+      V <= 1'b0;
+    end else begin
       state <= nextState;
 
     case (nextState)
@@ -141,6 +143,10 @@ module CVP14(output [15:0] Addr, output reg RD, output reg WR, output reg V,
 
       done: begin
         updatePC <= 1'b1;
+        if (instruction[15:12] == vadd)
+          V <= V_flag;
+        else
+          V <= V;
       end
 
       overflow: begin
@@ -148,6 +154,7 @@ module CVP14(output [15:0] Addr, output reg RD, output reg WR, output reg V,
       end
 
     endcase
+    end //else
 
   end //always
 
@@ -174,14 +181,14 @@ module CVP14(output [15:0] Addr, output reg RD, output reg WR, output reg V,
         updateAddr <= 1'b0;
         Prevdone <= 1'b0;
         startadd <= 1'b0;
-        V <= 1'b0;
+        V_flag <= 1'b0;
       end
 
       newPC: begin
         RD <= 1'b1;
         WR <= 1'b0;
         sWR <= 1'b0;
-        V <= 1'b0;
+        V_flag <= 1'b0;
         setPC <= 1'b0;
       end
 
@@ -237,7 +244,7 @@ module CVP14(output [15:0] Addr, output reg RD, output reg WR, output reg V,
             if(Prevdone == 1'b1)
               begin
                 vInP <= AdderOut;
-                V <= OvF;
+                V_flag <= OvF;
                 vWR_p <= 1'b1;
                 startadd <= 1'b0;
               end
@@ -315,7 +322,7 @@ module CVP14(output [15:0] Addr, output reg RD, output reg WR, output reg V,
 
   end
 
-  always @(state, instruction, updateAddr, inc_offset, vWR_p, V) begin
+  always @(state, instruction, updateAddr, inc_offset, vWR_p, V_flag) begin
 
     case (state)
 
@@ -403,7 +410,7 @@ module CVP14(output [15:0] Addr, output reg RD, output reg WR, output reg V,
       end
 
       done: begin
-        if (V)
+        if (V_flag)
           nextState = overflow;
         else
           nextState = newPC;
